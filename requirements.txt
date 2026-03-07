@@ -1,11 +1,20 @@
+# Core framework
 langgraph>=0.0.47
 google-genai>=0.3.0
+pydantic>=2.5.0
+
+# Vector store
 qdrant-client>=1.16.0
 sentence-transformers>=2.2.2
+
+# Web search
 tavily-python>=0.2.1
 ddgs>=1.0.0
-streamlit>=1.29.0
-aiohttp>=3.9.1
-python-dotenv>=1.0.0
-pydantic>=2.5.0
 requests>=2.31.0
+aiohttp>=3.9.1
+
+# UI
+streamlit>=1.29.0
+
+# Config
+python-dotenv>=1.0.0

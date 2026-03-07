@@ -2,7 +2,7 @@
 venv/
 env/
 ENV/
-.venv
+.venv/
 
 # Python
 __pycache__/

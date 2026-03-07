@@ -16,7 +16,6 @@ import os
 from dotenv import load_dotenv
 
 from src.vector_store import QdrantVectorStore
-from src.vector_store import QdrantVectorStore
 from src.workflow import FactCheckingWorkflow
 from src.cache import SimpleCache
 from src.gemini_router import GeminiRouter
@@ -181,28 +180,44 @@ if verify_button and statement:
             st.error("❌ **අසත්‍යයි** (FALSE)")
         else:
             st.warning("⚠️ **තොරතුරු ප්‍රමාණවත් නොවේ** (INSUFFICIENT)")
-    
-    # Analysis
-    st.subheader("📋 විශ්ලේෂණ (Analysis)")
-    st.write(result.get("analysis", "No analysis available"))
-    
-    # Details
-    with st.expander("📝 විස්තර (Details)"):
-        col1, col2, col3, col4 = st.columns(4)
+
+    # Tabs for detailed view
+    tab1, tab2, tab3 = st.tabs(["📝 විශ්ලේෂණ (Analysis)", "🧠 කාර්ය ප්‍රවාහය (Thought Process)", "🔍 සාක්ෂි (Evidence)"])
+
+    with tab1:
+        st.markdown(result.get("final_report") or result.get("analysis") or "No analysis available")
         
-        with col1:
-            st.metric("ක්ෂේත්‍ර (Domain)", result.get("domain", "N/A"))
-        with col2:
-            st.metric("ක්‍රමය (Method)", result.get("search_source", "local"))
-        with col3:
-            st.metric("Cache Hit", "✓" if cached else "✗")
-        with col4:
-            st.metric("Timestamp", datetime.now().strftime("%H:%M:%S"))
-        
+        if result.get("critique"):
+            st.info(f"**Reviewer Critique during process:** {result.get('critique')}")
+
+    with tab2:
+        st.subheader("Agent Workflow Trace")
+        trace = result.get("trace", [])
+        if trace:
+            st.code(" -> ".join(trace), language="text")
+            
+            for i, step in enumerate(trace):
+                st.text(f"Step {i+1}: {step.capitalize()} Agent active")
+        else:
+            st.write("No trace information available.")
+            
+        st.json({
+            "domain": result.get("domain"),
+            "revision_count": result.get("revision_count"),
+            "search_source": result.get("search_source")
+        })
+
+    with tab3:
         st.subheader("ලබා ගත් ឩප්‍රකාශ (Retrieved Documents)")
-        for i, doc in enumerate(result.get("retrieved_docs", [])[:3]):
-            st.write(f"**{i+1}. {doc.get('source', 'Unknown')}** (Score: {doc.get('score', 0):.2f})")
-            st.text(doc.get("text", "")[:200] + "...")
+        for i, doc in enumerate(result.get("retrieved_docs", [])[:5]):
+            with st.expander(f"{i+1}. {doc.get('source', 'Unknown')} (Score: {doc.get('score', 0):.2f})"):
+                st.write(doc.get("text", ""))
+
+        if result.get("search_results"):
+             st.subheader("Web Search Results")
+             for i, res in enumerate(result.get("search_results")[:5]):
+                  st.markdown(f"- [{res.get('title', 'Link')}]({res.get('url', '#')})")
+                  st.text(res.get('content', '')[:200] + "...")
     
     # Add to history
     st.session_state.history.append({

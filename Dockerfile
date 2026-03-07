@@ -24,5 +24,8 @@ EXPOSE 8501
 # Define environment variable
 ENV NAME SinhalaFactCheck
 
+# Healthcheck to Ensure App is Running
+HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
+
 # Run app.py when the container launches
 ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]

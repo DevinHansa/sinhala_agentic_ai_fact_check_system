@@ -6,7 +6,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.workflow import FactCheckingWorkflow
 from src.vector_store import QdrantVectorStore
-from src.search import MultiSourceSearch
 from dotenv import load_dotenv
 
 # Load env
@@ -17,9 +16,8 @@ def test_workflow():
     # We might need to handle Qdrant lock if app is running.
     # For test, we can use in-memory or just try.
     try:
-        vs = QdrantVectorStore() 
-        search = MultiSourceSearch()
-        workflow = FactCheckingWorkflow(vs, search)
+        vs = QdrantVectorStore()
+        workflow = FactCheckingWorkflow(vs)
         
         statement = "ශ්‍රී ලංකාවේ ජනාධිපතිවරණය 2024 පැවැත්වේ." # "Sri Lanka Presidential Election is held in 2024"
         print(f"Testing Statement: {statement}")

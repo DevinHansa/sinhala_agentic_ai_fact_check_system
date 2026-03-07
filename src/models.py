@@ -14,3 +14,10 @@ class FactCheckState(TypedDict):
     sufficiency: Optional[str]
     search_source: Optional[str]
     cached: bool
+    # New fields for Multi-Agent Workflow
+    revision_count: int
+    critique: Optional[str]
+    editor_feedback: Optional[str]
+    final_report: Optional[str]
+    step: str # current step name
+    trace: List[str] # log of steps taken

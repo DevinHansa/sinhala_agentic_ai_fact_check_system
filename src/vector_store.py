@@ -13,9 +13,18 @@ class QdrantVectorStore:
     
     def __init__(self, storage_path: str = "./qdrant_data"):
         """Initialize Qdrant client and encoder."""
+        import os
         self.storage_path = storage_path
+        
+        # Check for remote connection first
+        url = os.getenv("QDRANT_URL")
+        api_key = os.getenv("QDRANT_API_KEY")
+        
         try:
-            self.qdrant = QdrantClient(path=storage_path)
+            if url:
+                self.qdrant = QdrantClient(url=url, api_key=api_key)
+            else:
+                self.qdrant = QdrantClient(path=storage_path)
         except RuntimeError as e:
             msg = str(e)
             if "already accessed by another instance" in msg:

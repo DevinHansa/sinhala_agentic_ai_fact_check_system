@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -10,9 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
 
@@ -25,24 +24,43 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install -r requirements.txt
         pip install pytest flake8
 
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        # exit-zero treats all errors as warnings
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    - name: Run verification script
-      env: 
-        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-        # We might skip this if secrets aren't set, but it's good to have.
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+        cache: 'pip'
+
+    - name: Install dependencies
       run: |
-        # Using a mock test or skipping api dependent tests if key is missing
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest
+
+    - name: Run mock tests
+      run: python test_system_mock.py
+
+    - name: Run integration tests
+      env:
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      run: |
         if [ -n "$GOOGLE_API_KEY" ]; then
           python test_system.py
         else
-          echo "Skipping integration test due to missing GOOGLE_API_KEY"
+          echo "Skipping integration test — GOOGLE_API_KEY not set"
         fi
